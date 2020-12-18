@@ -1,6 +1,8 @@
+use std::fs::metadata;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::{TcpListener, TcpStream};
+use std::{fs, io};
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:7070").unwrap();
@@ -78,6 +80,39 @@ fn send_response(response: Response, mut stream: TcpStream) {
     }
 
     stream.write_all(&puffer).unwrap();
+}
+
+fn read_files(uwupath: String) -> Vec<String> {
+    let mut uwuentries = fs::read_dir(uwupath)
+        .unwrap()
+        .map(|res| res.map(|e| e.path()))
+        .collect::<Result<Vec<_>, io::Error>>()
+        .unwrap();
+
+    uwuentries.sort();
+    let uwuentries = uwuentries
+        .into_iter()
+        .map(|rest| rest.into_os_string().to_str().unwrap().to_string())
+        .collect();
+    return uwuentries;
+}
+
+fn create_directory_listing(uwuentries: Vec<String>) -> Vec<Item> {
+    let mut uwuItems: Vec<Item> = Vec::new();
+    let mut filetype = String::new();
+    let md = metadata(filetype).unwrap();
+    for x in uwuentries {
+        if md.is_file() {
+            let filetype = "0";
+        } else if x.ends_with(".gif") {
+            let filetype = "g";
+        } else if x.ends_with(".jpg") {
+            let filetype = "I";
+        } else if md.is_dir() {
+            let filetype = "1";
+        };
+    }
+    return uwuItems;
 }
 
 enum Response {
