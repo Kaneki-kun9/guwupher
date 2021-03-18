@@ -1,8 +1,14 @@
-use std::fs::metadata;
+use std::fs::{metadata, File};
 use std::io::prelude::*;
 use std::io::BufReader;
-use std::net::{TcpListener, TcpStream};
 use std::{fs, io};
+use std::net::{TcpListener, TcpStream};
+
+mod gopher;
+
+use crate::gopher::datatypes::*;
+use crate::gopher::testing;
+use crate::gopher::respuwing;
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:7070").unwrap();
@@ -11,7 +17,7 @@ fn main() {
         let uwubuffer = read_until_crlf(&mut stream);
 
         let response = router(uwubuffer);
-        send_response(response, stream);
+        respuwing::send_response(response, stream);
     }
 }
 
@@ -21,83 +27,39 @@ fn read_until_crlf(stream: &mut TcpStream) -> String {
 
     let mut buffread = BufReader::new(stream);
     buffread.read_line(&mut uwubuffer).unwrap();
-
+    println!("Last two bytes: {:?}", uwubuffer.chars().nth(uwubuffer.len() - 1).unwrap());
+    // Remove \r\n
+    // TODO: Dont asume the gender... Can be \n or \r\n. The testing Client uses only \n So we only pop once.
     uwubuffer.pop();
-    uwubuffer.pop();
+    //uwubuffer.pop();
 
     return uwubuffer;
 }
 
 fn router(uwubuffer: String) -> Response {
+    println!("GOT REQUEST FOR: {}", uwubuffer.as_str());
     return match uwubuffer.as_str() {
-        "test1" => Response::Listing(Listing::new()),
-        "test2" => Response::Listing(Listing::new()),
-        "test3" => Response::Data(ItemType::BinaryFile, vec![9]),
-        "" => Response::Listing(Listing::new()),
-        _ => Response::Error,
+        "" => Response::Listing(create_listing_from_dirpath("")),
+        "../Cargo.toml" => Response::create_from_file( ItemType::TextFile ,"../Cargo.toml"),
+        path => route_file_from_path(path),
     };
 }
 
-fn send_response(response: Response, mut stream: TcpStream) {
-    let mut puffer: Vec<u8> = Vec::new();
+fn route_file_from_path(path: &str) -> Response {
+    // TODO: Check if file exists.
+    // TODO: Check File Type
+    let mut full_path = "./root_dir/".to_string();
+    full_path.push_str(path);
 
-    match response {
-        Response::Listing(listings) => {
-            for item in listings.items {
-                match item.tuwu {
-                    ItemType::BinaryFile => puffer.push(b'9'),
-                    ItemType::TextFile => puffer.push(b'0'),
-                    ItemType::Directory => puffer.push(b'1'),
-                    ItemType::GIFFY => puffer.push(b'g'),
-                    ItemType::IMGY => puffer.push(b'I'),
-                }
-                puffer.extend_from_slice(item.desc.as_bytes());
-                puffer.push(9); //ASCII Tab Zeichen uwu :3
-                puffer.extend_from_slice(item.path.as_bytes());
-                puffer.push(9);
-                puffer.extend_from_slice(item.server.as_bytes());
-                puffer.push(9);
-                puffer.extend_from_slice(item.port.to_string().as_bytes());
-                //ASCII for CR LF uwu
-                puffer.push(13);
-                puffer.push(10);
-            }
-            puffer.push(b'.');
-            puffer.push(13);
-            puffer.push(10);
-        }
-        Response::Data(tuwu, mut data) => match tuwu {
-            ItemType::TextFile => {
-                puffer.append(&mut data);
-                puffer.push(b'.');
-                puffer.push(13);
-                puffer.push(10);
-            }
-            _ => puffer.append(&mut data),
-        },
-        //TODO: Finish
-        Response::Error => unimplemented!(),
+    match ItemType::get_item_type_from_path(full_path.as_str()) {
+        Some(ItemType::Directory) => Response::Listing(create_listing_from_dirpath(path)),
+        Some(item_type) => Response::create_from_file(item_type, full_path.as_str()),
+        _ => Response::Error,
     }
-
-    stream.write_all(&puffer).unwrap();
+    // TODO: send Response
 }
 
-fn read_files(uwupath: String) -> Vec<String> {
-    let mut uwuentries = fs::read_dir(uwupath)
-        .unwrap()
-        .map(|res| res.map(|e| e.path()))
-        .collect::<Result<Vec<_>, io::Error>>()
-        .unwrap();
-
-    uwuentries.sort();
-    let uwuentries = uwuentries
-        .into_iter()
-        .map(|rest| rest.into_os_string().to_str().unwrap().to_string())
-        .collect();
-    return uwuentries;
-}
-
-fn create_directory_listing(uwuentries: Vec<String>) -> Vec<Item> {
+/*fn create_directory_listing(uwuentries: Vec<String>) -> Vec<Item> {
     let mut uwuItems: Vec<Item> = Vec::new();
     let mut filetype = String::new();
     let md = metadata(filetype).unwrap();
@@ -106,47 +68,40 @@ fn create_directory_listing(uwuentries: Vec<String>) -> Vec<Item> {
             let filetype = "0";
         } else if x.ends_with(".gif") {
             let filetype = "g";
-        } else if x.ends_with(".jpg") {
+        } else if x.ends_with(".png") {
             let filetype = "I";
         } else if md.is_dir() {
             let filetype = "1";
         };
     }
     return uwuItems;
-}
+}*/
 
-enum Response {
-    Listing(Listing),
-    Data(ItemType, Vec<u8>),
-    Error,
-}
+fn create_listing_from_dirpath(path: &str) -> Listing {
+    let mut full_path = "./root_dir/".to_string();
+    full_path.push_str(path);
 
-struct Listing {
-    items: Vec<Item>,
-}
+    let mut listing = Listing::new();
 
-impl Listing {
-    fn new() -> Listing {
-        let uwu: Vec<Item> = Vec::new();
-        return Listing { items: uwu };
+    for file in fs::read_dir(&full_path).unwrap() {
+        match file {
+            Ok(realfile) => {
+                let response_path = realfile.path().to_str().unwrap().to_string();
+
+                listing.add(
+                    Item {
+                        tuwu: ItemType::get_item_type_from_path(response_path.as_str()).unwrap(),
+                        desc: realfile.file_name().into_string().unwrap(),
+                        path: response_path.split("./root_dir/").nth(1).unwrap().to_string(),
+                        server: "127.0.0.1".to_string(),
+                        port: 7070,
+                    }
+                )
+            }
+            _ => {}
+        }
     }
+    println!("Listing: {:?}", listing);
+    return listing;
 
-    fn add(&mut self, x: Item) {
-        self.items.push(x);
-    }
-}
-
-enum ItemType {
-    BinaryFile,
-    TextFile,
-    Directory,
-    GIFFY,
-    IMGY,
-}
-struct Item {
-    tuwu: ItemType,
-    desc: String,
-    path: String,
-    server: String,
-    port: u32,
 }
