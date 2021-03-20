@@ -11,7 +11,7 @@ use crate::gopher::testing;
 use crate::gopher::respuwing;
 
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:7070").unwrap();
+    let listener = TcpListener::bind("0.0.0.0:7070").unwrap();
     for stream in listener.incoming() {
         let mut stream = stream.unwrap();
         let uwubuffer = read_until_crlf(&mut stream);
@@ -31,7 +31,7 @@ fn read_until_crlf(stream: &mut TcpStream) -> String {
     // Remove \r\n
     // TODO: Dont asume the gender... Can be \n or \r\n. The testing Client uses only \n So we only pop once.
     uwubuffer.pop();
-    //uwubuffer.pop();
+    uwubuffer.pop();
 
     return uwubuffer;
 }
