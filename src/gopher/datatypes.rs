@@ -8,6 +8,8 @@ use mime_guess::{MimeGuess};
 use mime_guess::mime;
 use mime_guess::mime::Mime;
 
+use crate::SERVER_ADRESS;
+
 #[derive(Debug)]
 pub enum ItemType {
     BinaryFile,
@@ -54,7 +56,7 @@ impl Item {
             tuwu: tuwu,
             desc: "Test".to_string(),
             path: "test3".to_string(),
-            server: "127.0.0.1".to_string(),
+            server: SERVER_ADRESS.to_string(),
             port: 7070,
         }
     }

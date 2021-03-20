@@ -1,4 +1,4 @@
-use std::fs::{metadata, File};
+use std::{fs::{metadata, File}, string};
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::{fs, io};
@@ -10,7 +10,10 @@ use crate::gopher::datatypes::*;
 use crate::gopher::testing;
 use crate::gopher::respuwing;
 
+pub static SERVER_ADRESS:&'static str = "mintendo-programmer.de";
+
 fn main() {
+    
     let listener = TcpListener::bind("0.0.0.0:7070").unwrap();
     for stream in listener.incoming() {
         let mut stream = stream.unwrap();
