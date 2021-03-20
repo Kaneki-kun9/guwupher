@@ -96,7 +96,7 @@ fn create_listing_from_dirpath(path: &str) -> Listing {
                         tuwu: ItemType::get_item_type_from_path(response_path.as_str()).unwrap(),
                         desc: realfile.file_name().into_string().unwrap(),
                         path: response_path.split("./root_dir/").nth(1).unwrap().to_string(),
-                        server: "127.0.0.1".to_string(),
+                        server: SERVER_ADRESS.to_string(),
                         port: 7070,
                     }
                 )
