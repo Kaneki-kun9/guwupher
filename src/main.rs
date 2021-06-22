@@ -1,16 +1,17 @@
-use std::{fs::{metadata, File}, string};
+
 use std::io::prelude::*;
 use std::io::BufReader;
-use std::{fs, io};
+use std::{fs};
 use std::net::{TcpListener, TcpStream};
 
 mod gopher;
 
 use crate::gopher::datatypes::*;
-use crate::gopher::testing;
+
 use crate::gopher::respuwing;
 
-pub static SERVER_ADRESS:&'static str = "mintendo-programmer.de";
+//pub static SERVER_ADRESS:&'static str = "mintendo-programmer.de";
+pub static SERVER_ADRESS:&'static str = "127.0.0.1";
 
 fn main() {
     
@@ -33,7 +34,7 @@ fn read_until_crlf(stream: &mut TcpStream) -> String {
     println!("Last two bytes: {:?}", uwubuffer.chars().nth(uwubuffer.len() - 1).unwrap());
     // Remove \r\n
     // TODO: Dont asume the gender... Can be \n or \r\n. The testing Client uses only \n So we only pop once.
-    uwubuffer.pop();
+    //uwubuffer.pop();
     uwubuffer.pop();
 
     return uwubuffer;

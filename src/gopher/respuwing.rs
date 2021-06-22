@@ -1,5 +1,4 @@
-use std::net::{TcpListener, TcpStream};
-use std::{fs, io};
+use std::net::{TcpStream};
 use std::io::Write;
 
 use super::datatypes::*;
@@ -50,17 +49,4 @@ pub fn send_response(response: Response, mut stream: TcpStream) {
     stream.write_all(&puffer).unwrap();
 }
 
-fn read_files(uwupath: String) -> Vec<String> {
-    let mut uwuentries = fs::read_dir(uwupath)
-        .unwrap()
-        .map(|res| res.map(|e| e.path()))
-        .collect::<Result<Vec<_>, io::Error>>()
-        .unwrap();
 
-    uwuentries.sort();
-    let uwuentries = uwuentries
-        .into_iter()
-        .map(|rest| rest.into_os_string().to_str().unwrap().to_string())
-        .collect();
-    return uwuentries;
-}

@@ -1,14 +1,13 @@
 use std::vec::Vec;
-use std::fs::{File, Metadata, metadata};
+use std::fs::{File};
 use std::path::Path;
 
 use std::io::Read;
 
 use mime_guess::{MimeGuess};
 use mime_guess::mime;
-use mime_guess::mime::Mime;
 
-use crate::SERVER_ADRESS;
+
 
 #[derive(Debug)]
 pub enum ItemType {
@@ -50,17 +49,7 @@ impl Listing {
 }   
 
 
-impl Item {
-    pub fn new(tuwu: ItemType) -> Item {
-        Item {
-            tuwu: tuwu,
-            desc: "Test".to_string(),
-            path: "test3".to_string(),
-            server: SERVER_ADRESS.to_string(),
-            port: 7070,
-        }
-    }
-}
+
 
 impl Response {
     pub fn create_from_file(memetype: ItemType, path: &str) -> Response {
