@@ -3,12 +3,11 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::{fs};
 use std::net::{TcpListener, TcpStream};
+use libuwu;
 
-mod gopher;
+use crate::libuwu::datatypes::*;
 
-use crate::gopher::datatypes::*;
-
-use crate::gopher::respuwing;
+use crate::libuwu::respuwing;
 
 //pub static SERVER_ADRESS:&'static str = "mintendo-programmer.de";
 pub static SERVER_ADRESS:&'static str = "127.0.0.1";
