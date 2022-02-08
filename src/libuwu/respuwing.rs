@@ -8,6 +8,7 @@ pub fn send_response(response: Response, mut stream: TcpStream) {
 
     match response {
         Response::Listing(listings) => {
+            println!("hiiiiii");
             for item in listings.items {
                 match item.tuwu {
                     ItemType::BinaryFile => puffer.push(b'9'),
@@ -30,6 +31,7 @@ pub fn send_response(response: Response, mut stream: TcpStream) {
             puffer.push(b'.');
             puffer.push(13);
             puffer.push(10);
+            println!("test....")
         }
         Response::Data(tuwu, mut data) => match tuwu {
             ItemType::TextFile => {

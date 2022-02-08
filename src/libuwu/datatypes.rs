@@ -18,6 +18,7 @@ pub enum ItemType {
     IMGY,
 }
 
+#[derive(Debug)]
 pub enum Response {
     Listing(Listing),
     Data(ItemType, Vec<u8>),
@@ -68,18 +69,17 @@ impl ItemType {
     // Checks MIME type purely based on path.
     // Does not check whether file is valid, exists, or anything like that.
     pub fn get_item_type_from_path(path: &str) -> Option<ItemType> {
-        // TODO: Check if File exists
         let path: &Path = Path::new(path);
 
         println!("Checking file {}", path.to_str().unwrap());
 
         if ! path.exists() {
+            println!("is this our destiny?");
             return None;
         }
 
         println!("File exists.");
 
-        // TODO: File is directory
         if path.is_dir() {
             return Some(ItemType::Directory);
         }
@@ -87,6 +87,7 @@ impl ItemType {
         println!("File is not dir");
 
         if ! path.is_file() {
+            println!("are we in hell?");
             return None;
         }
 
